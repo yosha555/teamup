@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Sign Up{% endblock %}
+
+{% block content %}
+<div class="form-container">
+  <h2 class="signup-title">Create Your Account</h2>
+  <form action="{{ url_for('signup') }}" method="POST" class="signup-form" id="signup-form">
+    <input type="text" name="name" placeholder="Full Name" required>
+    <input type="email" name="email" placeholder="Email Address" required>
+    <input type="password" name="pwd" placeholder="Password" required>
+    <button type="submit">Sign Up</button>
+  </form>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="flash-messages">
+        {% for msg in messages %}
+          <p class="flash-msg">{{ msg }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <p class="switch-link">Already registered? <a href="{{ url_for('login') }}">Log in</a></p>
+</div>
+
+<script>
+const form = document.getElementById("signup-form");
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  // Generate RSA key pair
+  const keyPair = await window.crypto.subtle.generateKey(
+    {
+      name: "RSA-OAEP",
+      modulusLength: 2048,
+      publicExponent: new Uint8Array([1, 0, 1]),
+      hash: "SHA-256",
+    },
+    true,
+    ["encrypt", "decrypt"]
+  );
+
+  // Export keys to ArrayBuffer
+  const publicKey = await window.crypto.subtle.exportKey("spki", keyPair.publicKey);
+  const privateKey = await window.crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
+
+  // Convert ArrayBuffer to Base64
+function arrayBufferToBase64(buffer) {
+  let binary = "";
+  const bytes = new Uint8Array(buffer);
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
+  // Convert to PEM format
+  function convertToPEM(base64, type) {
+    const header = type === "public" ? "-----BEGIN PUBLIC KEY-----" : "-----BEGIN PRIVATE KEY-----";
+    const footer = type === "public" ? "-----END PUBLIC KEY-----" : "-----END PRIVATE KEY-----";
+    const body = base64.match(/.{1,64}/g).join("\n");
+    return `${header}\n${body}\n${footer}`;
+  }
+
+  const publicKeyBase64 = arrayBufferToBase64(publicKey);
+  const privateKeyBase64 = arrayBufferToBase64(privateKey);
+
+  const publicKeyPEM = convertToPEM(publicKeyBase64, "public");
+  const privateKeyPEM = convertToPEM(privateKeyBase64, "private");
+
+  // Prepare form data
+  const formData = new FormData(form);
+  formData.append("publicKey", publicKeyPEM);
+  formData.append("privateKey", privateKeyPEM); 
+
+  // Submit via fetch
+  fetch("/signup", {
+    method: "POST",
+    body: formData,
+  })
+  .then(response => {
+    if (response.redirected) {
+      window.location.href = response.url;
+    } else {
+      return response.text().then(console.log);
+    }
+  })
+  .catch(error => console.error("Error:", error));
+});
+</script>
+{% endblock %}

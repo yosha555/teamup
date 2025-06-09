@@ -1,0 +1,88 @@
+<script>
+    async function importPrivateKeyFromPEM(pem) {
+    const pemHeader = "-----BEGIN PRIVATE KEY-----";
+    const pemFooter = "-----END PRIVATE KEY-----";
+    const pemContents = pem.replace(pemHeader, "").replace(pemFooter, "").replace(/\n/g, '').trim();
+
+    const binaryDer = atob(pemContents);
+    const binaryDerBuffer = new Uint8Array(binaryDer.length);
+    for (let i = 0; i < binaryDer.length; i++) {
+        binaryDerBuffer[i] = binaryDer.charCodeAt(i);
+    }
+
+    return await crypto.subtle.importKey(
+        "pkcs8",
+        binaryDerBuffer.buffer,
+        {
+            name: "RSA-OAEP",
+            hash: "SHA-256"
+        },
+        false,
+        ["decrypt"]
+    );
+}
+
+function base64ToArrayBuffer(base64) {
+    const binaryString = atob(base64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes.buffer;
+}
+
+async function decryptMessage(encryptedBase64) {
+    try {
+        const privateKey = await importPrivateKeyFromPEM(privateKeyPEM);
+        const encryptedBuffer = base64ToArrayBuffer(encryptedBase64);
+
+        const decryptedBuffer = await crypto.subtle.decrypt(
+            { name: "RSA-OAEP" },
+            privateKey,
+            encryptedBuffer
+        );
+
+        return new TextDecoder().decode(decryptedBuffer);
+    } catch (err) {
+        console.error("Decryption failed:", err);
+        throw err;
+    }
+}
+    
+    // === Example usage ===
+    const privateKeyPEM = `-----BEGIN PRIVATE KEY-----
+MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC2TUCcioaSZRgJ
+5hMJlywF7acghb77pRJ+Y+EZFbgSd/mJkoau2exI5LNsS5w1IEsgjABbTHPCrxcx
+TbksI6vIo85CobCB/Krsss9Ow87iqIfuxpkDTIwCiLoqghn7GooDIEwq0Ir81KPP
+Z+/Ol9qh8+K308Y0BofPNwTbprq5EHfVdfHSeRVm2eHS1E2tiuMRc2wmvMfXDboc
+HEbv9ea4Jhk0m+It53vcFuP2/yp+dpzt/pkQqtYL4FIgTgBWcPcxQUrKTkiBi9yP
+a8UiB+tP4Y5P3Zgh+bsY6FF7ShsIx6wFzY/Us4DPAPlBSTzbCkL3mWV4uvXH4Rhi
+aece1fNFAgMBAAECggEAC16r6VzUvKPW+Q5ogLg1C+/w9OeP4YMqW90lWx/pEX0k
+6wELQDOsbQsXK1Qs5ihWidgJe/2Q7mMRW9HDOzREq23B+Ghms+NlvVT/9njiZJhf
+v/3oFFYCw8lcw7gbtYxHxXRPI9AgDFmZF4oIjBaZpsZT989FZOsaWctj6hd5klSl
+dEbTXJojnacnUj1oBCkJYFeJsFSvyWzgC/KR7dWcCZaqBK8RyuUgFSI0oN7CUSHa
+AiPXkcLoOoBJvNLrRjpm9sHZTxvlVt3cgkZ8hRakE3SWDkvsbgqoTGx73Zf83Nje
+Pjct/HKe3i8jn46+R14fravCQkAiBOKIDI150NCE6QKBgQD6DUDUQuK2o9DHBAf9
+lZCp3A0b44PFppCTtaKRsp73LR3LAAwlYOXTpsCmBigjG/adsp/PMO+Z2TDMXUuR
+iUJ6Np5BaIjFpoP5y/RTnYQuhkBGjHDeY3f2o+EnCzTQiP0byvgC7cAa/jYPE3f1
+7c0oKc40Ga9QhlO/8W6B21dtyQKBgQC6o2uR5HvmaHbfcKeAP2ky0pVXqqEkK5fu
+jK8BI5XWANRF6ov10X62UhkPmBk5PFDRAV9m2koGSzxtiDhjghoNnFdycCNF+4IY
++7MEwPhDVZnGOSQ0jPHIcIg8Yc1PP6XLD7j+WxwBN0hzRYwkdPjQGQCLHbT+dR7e
+O2jsy44nnQKBgQDIKEu4nUG1STQZ2pQ63LpL/aVQqbIVSNt6IW7cicrNuQOcN5GB
+aisOXPDg9RSz5fJnEVDzHQzubfit3hBbky/vfED5wp+Y9021axlMxU3FoBlbX5gJ
+rD2e5FeaVVIVi1JwKOyWC5I3CT5kmwTvi0cp2y0Ab37ySlRH1Q7MS7OUYQKBgG6j
+ZacsrQ4fKyi1nXX3ISORlhpL+g55ES3GlA+2yqH8B9oSejmUoOrvrA+EeJ9nU/ky
+OR29lVg5zW6Y6+SBQXSEE4qxUxevSqYIv0y4H/O6kNfjE8VbMBFENF6nE5BBCMVh
+YqbV17oYzYgX2EXcWYry51GQoLSfNVdEHKUS3gg5AoGBALOtW24R+Q9ZgukK510P
+49QseyMb+feYvopVJmP3R78hg87QFjQhGtEaiU5THELlCGduoEC7S844EqdZy7EC
+S3eyjrRwSX04zQTu9yanFnBzEPz/Wn94Tjz+lzDgPchiIox8Bl4TRfyOPSFs9+hd
+vpJgyP1b0zuYbdGOkyqNgbIa
+-----END PRIVATE KEY-----`;
+    
+    const encryptedBase64 = `Yw1zNPwsT2lMTcaImi3TryYgCUL/h8dA/WhXjnUkP0XuqtEExMVukmNXmO9BM7qq42dJxZwosE2TMr7u3IcELaFdwQ0bquSKKSCPWLnEei5KNbJVPx227D+pUhIufxIC97p5H6qxxo8zndx35oMvK37BlXs8Q/e2eW2uneZba+wQtoqP8PgRVrmqvUtPb1UYEEYv1lhmtzXjNIhtHmdw/gou4hR2Kx9FfE2Ild5j2tLw3WZpibFfeD3CbHQzNQTV8N4h+rYkg9ex9lNI9vGXDa/vXuJz//FecsnqMX95Uu/pA6i3iGoCkLkoVigtLKe/AQ08LAb5+sy4da/s1RUW6A==`;
+    
+    decryptMessage(encryptedBase64).then(result => {
+        console.log("Decrypted:", result);
+    });
+    </script>
+    

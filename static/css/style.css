@@ -1,0 +1,583 @@
+/* === Page Reset & Base === */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f2f5;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+/* === Shared Form Container === */
+.form-container {
+    max-width: 400px;
+    margin: 100px auto;
+    padding: 40px;
+    background-color: white;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    text-align: center;
+    animation: fadeIn 0.4s ease-in;
+}
+
+/* === Titles === */
+.login-title,
+.signup-title {
+    font-size: 2em;
+    margin-bottom: 20px;
+    color: #222;
+}
+
+/* === Shared Form Styles === */
+.login-form input,
+.signup-form input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1em;
+    box-sizing: border-box;
+}
+
+.login-form button,
+.signup-form button {
+    width: 100%;
+    padding: 12px;
+    background-color: #0059ff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.login-form button:hover,
+.signup-form button:hover {
+    background-color: #0043cc;
+}
+
+/* === Flash Messages === */
+.flash-messages {
+    margin-top: 20px;
+    background-color: #ffe0e0;
+    border: 1px solid #ffaaaa;
+    border-radius: 6px;
+    padding: 10px;
+    text-align: left;
+}
+
+.flash-msg {
+    color: #b30000;
+    font-size: 0.95em;
+    margin: 5px 0;
+}
+
+/* === Switch Link === */
+.switch-link {
+    margin-top: 20px;
+    font-size: 0.95em;
+    color: #555;
+}
+
+.switch-link a {
+    color: #0059ff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.switch-link a:hover {
+    text-decoration: underline;
+}
+
+/* === Fade In Animation === */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* === Rooms Page Container === */
+.rooms-container {
+    max-width: 800px;
+    margin: 80px auto;
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.07);
+    animation: fadeIn 0.4s ease-in;
+}
+
+/* === Welcome Title === */
+.welcome-rooms {
+    font-size: 2em;
+    margin-bottom: 30px;
+    text-align: center;
+    color: #222;
+}
+
+/* === Section Titles === */
+.section {
+    margin-bottom: 40px;
+}
+
+.room-title,
+.form-title {
+    font-size: 1.4em;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+/* === Room List === */
+.room-list {
+    list-style: none;
+    padding: 0;
+}
+
+.room-item {
+    margin: 10px 0;
+    padding: 10px 14px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+
+.room-item:hover {
+    background-color: #f9f9f9;
+}
+
+.room-link {
+    text-decoration: none;
+    font-weight: 600;
+    color: #0059ff;
+}
+
+.room-link:hover {
+    text-decoration: underline;
+}
+
+.room-code {
+    font-size: 0.9em;
+    color: #777;
+}
+
+/* === Empty State === */
+.empty-text {
+    color: #999;
+    font-style: italic;
+    font-size: 0.95em;
+}
+
+/* === Forms === */
+.room-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.room-form input {
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1em;
+}
+
+.room-form button {
+    padding: 12px;
+    background-color: #0059ff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.room-form button:hover {
+    background-color: #0043cc;
+}
+
+/* === Flash Messages (reused) === */
+.flash-messages {
+    margin-top: 20px;
+    background-color: #ffe0e0;
+    border: 1px solid #ffaaaa;
+    border-radius: 6px;
+    padding: 10px;
+}
+
+.flash-msg {
+    color: #b30000;
+    font-size: 0.95em;
+    margin: 5px 0;
+}
+
+/* === Reuse Animation === */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* === Room Container === */
+.room-container {
+    max-width: 1200px;
+    margin: 60px auto;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.4s ease-in;
+}
+
+/* === Header === */
+.room-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.room-header h1 {
+    font-size: 2em;
+    color: #222;
+}
+
+.highlight {
+    color: #0059ff;
+}
+
+.info-text {
+    font-size: 0.95em;
+    color: #666;
+    margin-top: 6px;
+}
+
+/* === Button Group === */
+.button-group {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.button-group .btn {
+    padding: 10px 16px;
+    font-size: 0.95em;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+}
+
+.return-btn {
+    background-color: #eee;
+    color: #333;
+}
+
+.leave-btn {
+    background-color: #ff4d4d;
+    color: white;
+}
+
+.return-btn:hover {
+    background-color: #ddd;
+}
+
+.leave-btn:hover {
+    background-color: #e60000;
+}
+
+/* === Main Content === */
+.main-content {
+    display: flex;
+    gap: 30px;
+}
+
+/* === Left Panel === */
+.left-panel {
+    flex: 2;
+}
+
+/* === Right Panel (Chat) === */
+.right-panel {
+    flex: 1;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-box {
+    flex-grow: 1;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 15px;
+    height: 400px;
+    overflow-y: auto;
+    background-color: #fff;
+}
+
+.chat-form {
+    display: flex;
+    gap: 10px;
+}
+
+.chat-form input[type="text"] {
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.send-btn {
+    background-color: #0059ff;
+    color: white;
+    padding: 10px 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.send-btn:hover {
+    background-color: #0043cc;
+}
+
+/* === Sections (Members, Tasks, etc.) === */
+.section {
+    margin-bottom: 30px;
+}
+
+.section h2 {
+    font-size: 1.3em;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+/* === Member List === */
+.member-list {
+    list-style: none;
+    padding: 0;
+}
+
+.member-list li {
+    margin-bottom: 6px;
+    font-size: 0.95em;
+}
+
+.email {
+    color: #777;
+    font-size: 0.85em;
+}
+
+/* === Task Form === */
+.task-form input,
+.task-form select {
+    display: block;
+    width: 100%;
+    padding: 8px;
+    margin: 8px 0;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+.create-task-btn {
+    background-color: #28a745;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.create-task-btn:hover {
+    background-color: #218838;
+}
+
+/* === Task Table === */
+.task-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.task-table th,
+.task-table td {
+    padding: 10px;
+    border: 1px solid #ccc;
+    text-align: left;
+    font-size: 0.95em;
+}
+
+.task-table th {
+    background-color: #f0f0f0;
+}
+
+.upload-btn {
+    margin-top: 8px;
+    padding: 6px 10px;
+    font-size: 0.85em;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.upload-btn:hover {
+    background-color: #0056b3;
+}
+
+/* === Reuse fadeIn === */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* Container for each chat message */
+.chat-message {
+    background: #f1f1f1;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    max-width: 80%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    word-wrap: break-word;
+  }
+  
+  /* Timestamp styling */
+  .chat-message .msg-time {
+    color: #888;
+    font-size: 0.8rem;
+    margin-right: 8px;
+    font-weight: 500;
+    user-select: none;
+  }
+  
+  /* Sender name styling */
+  .chat-message .msg-sender {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-right: 6px;
+  }
+  
+  /* Message text styling */
+  .chat-message .msg-text {
+    color: #34495e;
+    font-weight: 400;
+    white-space: pre-wrap; /* Preserve line breaks */
+  }
+
+  .home-container {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    text-align: center;
+    max-width: 700px;
+    width: 90%;
+    animation: fadeIn 1s ease-out;
+}
+
+/* Entry animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.home-header {
+    margin-bottom: 30px;
+}
+
+.main-heading {
+    font-size: 3em;
+    color: #2c3e50;
+    margin-bottom: 10px;
+    line-height: 1.2;
+}
+
+.highlight-text {
+    color: #3498db; /* A pleasant blue color */
+    font-weight: bold;
+}
+
+.tagline {
+    font-size: 1.2em;
+    color: #7f8c8d;
+    margin-top: 0;
+}
+
+.call-to-action {
+    margin-bottom: 40px;
+}
+
+.cta-text {
+    font-size: 1.1em;
+    color: #555;
+    margin-bottom: 25px;
+}
+
+.cta-buttons .btn {
+    display: inline-block;
+    padding: 12px 28px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.1em;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    margin: 0 10px;
+}
+
+.primary-btn {
+    background-color: #3498db;
+    color: #ffffff;
+    border: 2px solid #3498db;
+}
+
+.primary-btn:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.secondary-btn {
+    background-color: #ffffff;
+    color: #3498db;
+    border: 2px solid #3498db;
+}
+
+.secondary-btn:hover {
+    background-color: #ecf0f1;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.home-footer {
+    margin-top: 30px;
+    font-size: 0.9em;
+    color: #95a5a6;
+}
+  

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - TeamUp{% endblock %}
+
+{% block content %}
+<div class="home-container">
+    <header class="home-header">
+        <h1 class="main-heading">Welcome to <span class="highlight-text">TeamUp</span>!</h1>
+        <p class="tagline">The secure platform for team collaboration and task management.</p>
+    </header>
+
+    <section class="call-to-action">
+        <p class="cta-text">Start collaborating efficiently and securely.</p>
+        <div class="cta-buttons">
+            <a href="{{ url_for('signup') }}" class="btn primary-btn">Join Now</a>
+            <a href="{{ url_for('login') }}" class="btn secondary-btn">Already have an account? Log In</a>
+        </div>
+    </section>
+
+    <footer class="home-footer">
+        <p>&copy; 2025 TeamUp. All rights reserved.</p>
+    </footer>
+</div>
+{% endblock %}

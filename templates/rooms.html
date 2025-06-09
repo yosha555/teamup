@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Your Rooms{% endblock %}
+
+{% block content %}
+<div class="rooms-container">
+  <h1 class="welcome-rooms">Welcome, {{ user.name }}</h1>
+
+  <div class="section your-rooms">
+    <h2 class="room-title">Your Rooms</h2>
+    {% if user.rooms %}
+      <ul class="room-list">
+        {% for room in user.rooms %}
+          <li class="room-item">
+            <a class="room-link" href="{{ url_for('view_room', code=room.code) }}">{{ room.name }}</a>
+            <span class="room-code">({{ room.code }})</span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty-text">You are not in any rooms yet.</p>
+    {% endif %}
+  </div>
+
+  <div class="section join-room">
+    <h2 class="form-title">Join a Room</h2>
+    <form method="post" action="{{ url_for('join_room_route') }}" class="room-form">
+      <input type="text" name="name" placeholder="Room name" required>
+      <input type="text" name="code" placeholder="Room code" required>
+      <button type="submit">Join</button>
+    </form>
+  </div>
+
+  <div class="section create-room">
+    <h2 class="form-title">Create a Room</h2>
+    <form method="POST" action="{{ url_for('create_room') }}" class="room-form">
+      <input type="text" name="name" placeholder="Room name" required>
+      <button type="submit">Create</button>
+    </form>
+  </div>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="flash-messages">
+        {% for msg in messages %}
+          <p class="flash-msg">{{ msg }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+</div>
+{% endblock %}

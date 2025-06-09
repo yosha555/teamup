@@ -1,0 +1,363 @@
+{% extends "base.html" %}
+
+{% block title %}Room: {{ room.name }}{% endblock %}
+
+{% block content %}
+<div class="room-container">
+
+    <div class="room-header">
+        <h1>Welcome to <span class="highlight">{{ room.name }}</span></h1>
+        <p class="info-text">Room code: <code>{{ room.code }}</code></p>
+        <p class="info-text">You are logged in as <strong>{{ user.name }}</strong></p>
+    </div>
+
+    <div class="button-group">
+        <form id="return-form" action="{{ url_for('rooms') }}" method="POST">
+            <button type="submit" class="btn return-btn">Return</button>
+        </form>
+
+        <form id="leave-room-form" action="{{ url_for('leave_room_route', code=room.code) }}" method="POST">
+            <button type="submit" class="btn leave-btn">Leave Room</button>
+        </form>
+    </div>
+
+    <div class="main-content">
+        <div class="left-panel">
+            <div class="section">
+                <h2>Room Members</h2>
+                <ul class="member-list">
+                    {% for member in room.members %}
+                        <li>{{ member.name }} <span class="email">({{ member.email }})</span></li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>Add Task</h2>
+                <form method="POST" action="{{ url_for('create_task', room_code=room.code) }}" class="task-form">
+                    <label>Task Name:</label>
+                    <input type="text" name="name" required>
+
+                    <label>Due Date:</label>
+                    <input type="date" name="due_date">
+
+                    <label>Status:</label>
+                    <select name="status">
+                        <option value="not started">Not Started</option>
+                        <option value="working on it">Working on it</option>
+                        <option value="stuck">Stuck</option>
+                        <option value="done">Done</option>
+                    </select>
+
+                    <button type="submit" class="btn create-task-btn">Create Task</button>
+                </form>
+            </div>
+
+            <div class="section">
+                <h2>Tasks</h2>
+                <table class="task-table">
+                    <thead>
+                        <tr>
+                            <th>Task Name</th>
+                            <th>Owner</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                            <th>Files</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in tasks %}
+                        <tr>
+                            <td>{{ task.name }}</td>
+                            <td>
+                                <form method="POST" action="{{ url_for('update_task_assignee', task_id=task.id) }}">
+                                    <select name="assigned_to" onchange="this.form.submit()">
+                                        {% for member in room.members %}
+                                        <option value="{{ member.id }}" {% if member.id == task.assigned_to_id %}selected{% endif %}>
+                                            {{ member.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </form>
+                            </td>
+                            <td>{{ task.due_date.strftime('%Y-%m-%d') if task.due_date else 'No date' }}</td>
+                            <td>
+                                <form method="POST" action="{{ url_for('update_task_status', task_id=task.id) }}">
+                                    <select name="status" onchange="this.form.submit()">
+                                        <option value="not started" {{ 'selected' if task.status == 'not started' else '' }}>Not Started</option>
+                                        <option value="working on it" {{ 'selected' if task.status == 'working on it' else '' }}>Working on it</option>
+                                        <option value="stuck" {{ 'selected' if task.status == 'stuck' else '' }}>Stuck</option>
+                                        <option value="done" {{ 'selected' if task.status == 'done' else '' }}>Done</option>
+                                    </select>
+                                </form>
+                            </td>
+                            <td>
+                                {% for file in task.files %}
+                                    <a href="{{ url_for('download_task_file', file_id=file.id) }}">{{ file.filename }}</a><br>
+                                {% endfor %}
+
+                                <form method="POST" action="{{ url_for('upload_task_file', task_id=task.id) }}" enctype="multipart/form-data">
+                                    <input type="file" name="file" required>
+                                    <button type="submit" class="btn upload-btn">Upload</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <h2>Chat</h2>
+            <div id="messages" class="chat-box"></div>
+
+            <form id="chat-form" class="chat-form">
+                <input type="text" id="msg" name="msg" placeholder="Type your message..." required>
+                <input type="submit" value="Send" class="btn send-btn">
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    const socket = io();
+
+</script>
+<script>
+function pemToBase64(pem) {
+    return pem
+        .replace(/-----BEGIN PUBLIC KEY-----/, '')
+        .replace(/-----END PUBLIC KEY-----/, '')
+        .replace(/\n/g, '')
+        .trim();
+}
+
+function base64ToArrayBuffer(base64) {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes.buffer;
+}
+
+
+async function importPublicKeyFromPEM(pem) {
+    const base64 = pemToBase64(pem);
+    const buffer = base64ToArrayBuffer(base64);
+    return await crypto.subtle.importKey(
+        "spki",
+        buffer,
+        {
+            name: "RSA-OAEP",
+            hash: "SHA-256"
+        },
+        true,
+        ["encrypt"]
+    );
+}
+
+async function encryptForUser(publicKeyPEM, message) {
+    const publicKey = await importPublicKeyFromPEM(publicKeyPEM);
+    const encoded = new TextEncoder().encode(message);
+    const encrypted = await window.crypto.subtle.encrypt({ name: "RSA-OAEP" }, publicKey, encoded);
+    return btoa(String.fromCharCode(...new Uint8Array(encrypted)));
+}
+</script>
+
+
+<script id="members-data" type="application/json">{{ members_json | tojson }}</script>
+
+
+<script id="room-data" type="application/json">
+    { "room_id": {{ room.id }} }
+</script>
+
+
+<script id="private-key" type="application/json">
+    {{ user.private_key | tojson }}
+</script>
+
+<script>
+const members = JSON.parse(document.getElementById("members-data").textContent);
+const privateKeyPEM = JSON.parse(document.getElementById("private-key").textContent);
+ 
+
+const form = document.getElementById("chat-form");
+const input = document.getElementById("msg");
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const message = input.value;
+  const encryptedMessages = {};
+
+  for (const member of members) {
+    if (!member.public_key) {
+        console.error("Missing public key for member:", member);
+        continue;
+    }
+    const encrypted = await encryptForUser(member.public_key, message);
+    encryptedMessages[member.id] = encrypted;
+}
+
+
+    // encrypt for self too
+  const encryptedForSelf = await encryptForUser(`{{ user.public_key }}`, message);
+  encryptedMessages["self"] = encryptedForSelf;
+
+  const roomData = JSON.parse(document.getElementById("room-data").textContent);
+
+  fetch("/send_message", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      room_id: roomData.room_id,
+      messages: encryptedMessages,
+    }),
+  })
+
+  .then(res => res.json())
+  .then(data => {
+    console.log("Server response:", data);
+    input.value = ""; // clear input
+  })
+  .catch(err => console.error("Send error:", err));
+});
+
+</script>
+
+<script>
+async function importPrivateKeyFromPEM(pem) {
+    const pemHeader = "-----BEGIN PRIVATE KEY-----";
+    const pemFooter = "-----END PRIVATE KEY-----";
+    const pemContents = pem.replace(pemHeader, "").replace(pemFooter, "").replace(/\n/g, '').trim();
+
+    const binaryDer = atob(pemContents);
+    const binaryDerBuffer = new Uint8Array(binaryDer.length);
+    for (let i = 0; i < binaryDer.length; i++) {
+        binaryDerBuffer[i] = binaryDer.charCodeAt(i);
+    }
+
+    return await crypto.subtle.importKey(
+        "pkcs8",
+        binaryDerBuffer.buffer,
+        {
+            name: "RSA-OAEP",
+            hash: "SHA-256"
+        },
+        false,
+        ["decrypt"]
+    );
+}
+
+function base64ToArrayBuffer(base64) {
+    const binaryString = atob(base64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes.buffer;
+}
+
+async function decryptMessage(encryptedBase64) {
+    try {
+        const privateKey = await importPrivateKeyFromPEM(privateKeyPEM);
+        const encryptedBuffer = base64ToArrayBuffer(encryptedBase64);
+
+        const decryptedBuffer = await crypto.subtle.decrypt(
+            { name: "RSA-OAEP" },
+            privateKey,
+            encryptedBuffer
+        );
+
+        return new TextDecoder().decode(decryptedBuffer);
+    } catch (err) {
+        console.error("Decryption failed:", err);
+        throw err;
+    }
+}
+
+
+</script>
+
+<script id="user-data" type="application/json">
+    { "user_id": {{ user.id }} }
+</script>
+
+
+<script>
+    (async () => {
+        const roomData = JSON.parse(document.getElementById("room-data").textContent);
+        const userData = JSON.parse(document.getElementById("user-data").textContent);
+        const currentUserId = userData.user_id;
+    
+        async function fetchMessages() {
+            const res = await fetch(`/get_messages/${roomData.room_id}`);
+            const messages = await res.json();
+    
+            const chatBox = document.getElementById("messages");
+            chatBox.innerHTML = "";
+            console.log("current user id:", currentUserId);
+    
+            for (const msg of messages) {
+                if (msg.recipient_id !== currentUserId){
+                     continue; // Only decrypt if it's meant for this user
+                }
+                console.log("recipient id:", msg.recipient_id);
+    
+                const decrypted = await decryptMessage(msg.encrypted_content);
+                const time = new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); // no seconds
+    
+                const div = document.createElement("div");
+                div.classList.add("chat-message");
+                div.innerHTML = `<span class="msg-time">[${time}]</span> <span class="msg-sender">${msg.sender_name}:</span> <span class="msg-text">${decrypted}</span>`;
+                chatBox.appendChild(div);
+            }
+        }
+    
+        // Call this on page load
+        await fetchMessages();
+    })();
+    </script>
+    
+    <script>
+    const userData = JSON.parse(document.getElementById("user-data").textContent);
+    const currentUserId = userData.user_id;
+    
+    socket.on("new_message", async (data) => {
+      if (data.recipient_id !== currentUserId) return; // Only show if message is for you
+    
+      console.log(data.encrypted_content);
+    
+      const decrypted = await decryptMessage(data.encrypted_content);
+      const time = new Date(data.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); // no seconds
+    
+      const div = document.createElement("div");
+      div.classList.add("chat-message");
+      div.innerHTML = `<span class="msg-time">[${time}]</span> <span class="msg-sender">${data.sender_name}:</span> <span class="msg-text">${decrypted}</span>`;
+    
+      document.getElementById("messages").appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
+    </script>
+
+
+<script>
+
+
+socket.on("refresh_room", (data) => {
+    console.log("Received refresh signal for room:", data.room_code);
+    location.reload(); // Just refresh the page
+});
+</script>
+    
+    
+
+
+
+{% endblock%}
