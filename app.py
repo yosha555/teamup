@@ -283,16 +283,7 @@ def leave_room_route(code):
     if room in user.rooms:
         user.rooms.remove(room)
         db.session.commit()
-
-        # Check if room has any members left
-        if len(room.members) == 0:
-            # Delete all messages for this room (if cascade isn't set)
-            Message.query.filter_by(room_id=room.id).delete()
-            db.session.delete(room)
-            db.session.commit()
-            flash(f"You have left the room '{room.name}', and it was deleted because it became empty.")
-        else:
-            flash(f"You have left the room '{room.name}'.")
+        flash(f"You have left the room '{room.name}'.")
 
     return redirect(url_for("rooms"))
 
